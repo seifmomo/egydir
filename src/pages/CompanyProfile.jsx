@@ -77,10 +77,12 @@ export default function CompanyProfile() {
     <div className="animate-fade-up">
       {/* ── رأس الملف / البانر ─────────────────────────────── */}
       <section className="relative">
-        <div className="h-44 md:h-56 bg-gradient-to-l from-navy-800 via-navy-700 to-teal-brand-dark relative overflow-hidden">
+        <div className="h-44 md:h-56 bg-gradient-to-l from-navy-900 via-navy-700 to-teal-brand-dark relative overflow-hidden">
           <div className="absolute inset-0 bg-dots opacity-40" aria-hidden="true" />
           <div className="absolute -top-10 -end-10 w-64 h-64 rounded-full bg-teal-brand/20 blur-3xl" aria-hidden="true" />
           <div className="absolute -bottom-16 -start-8 w-72 h-72 rounded-full bg-white/10 blur-3xl" aria-hidden="true" />
+          <div className="absolute top-6 start-1/4 w-40 h-40 rounded-full bg-amber-brand/25 blur-3xl" aria-hidden="true" />
+          <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-l from-teal-brand via-navy-500 to-amber-brand" aria-hidden="true" />
         </div>
 
         {/* خلفية الشعار المتداخل */}

@@ -17,6 +17,10 @@
   --color-teal-brand-light: #38b2ac;
   --color-teal-brand-dark: #2c7a7b;
 
+  --color-amber-brand: #f59e0b;
+  --color-amber-brand-light: #fbbf24;
+  --color-amber-brand-dark: #d97706;
+
   --color-surface: #f7fafc;
   --color-slate-ink: #2d3748;
 
@@ -25,8 +29,9 @@
 
   --shadow-card: 0 1px 3px rgb(26 54 93 / 0.06), 0 8px 24px rgb(26 54 93 / 0.08);
   --shadow-card-hover: 0 2px 6px rgb(26 54 93 / 0.08), 0 16px 40px rgb(26 54 93 / 0.14);
+  --shadow-glow: 0 10px 40px rgb(49 151 149 / 0.35);
 
-  --radius-card: 12px;
+  --radius-card: 16px;
 }
 
 html {
@@ -42,7 +47,7 @@ body {
 }
 
 ::selection {
-  background-color: var(--color-teal-brand);
+  background-color: var(--color-amber-brand);
   color: #fff;
 }
 
@@ -62,21 +67,94 @@ body {
   background: #a0aec0;
 }
 
-/* Subtle dot pattern for hero background */
+/* ── Subtle dot pattern (used inside image tiles / banners) ─────── */
 .bg-dots {
-  background-image: radial-gradient(circle, rgb(26 54 93 / 0.08) 1px, transparent 1.2px);
+  background-image: radial-gradient(circle, rgb(255 255 255 / 0.28) 1px, transparent 1.2px);
+  background-size: 18px 18px;
+}
+.bg-dots-dark {
+  background-image: radial-gradient(circle, rgb(26 54 93 / 0.09) 1px, transparent 1.2px);
   background-size: 22px 22px;
 }
 
-/* Gradient mesh for hero */
-.bg-hero-mesh {
-  background:
-    radial-gradient(ellipse 60% 50% at 85% 0%, rgb(49 151 149 / 0.18), transparent 60%),
-    radial-gradient(ellipse 50% 60% at 8% 20%, rgb(26 54 93 / 0.16), transparent 60%),
-    linear-gradient(180deg, #f7fafc 0%, #edf2f7 100%);
+/* ── Light grid pattern for hero ─────────────────────────────────── */
+.bg-grid-slate {
+  background-image:
+    linear-gradient(to right, rgb(26 54 93 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(26 54 93 / 0.05) 1px, transparent 1px);
+  background-size: 46px 46px;
+}
+.mask-fade-b {
+  -webkit-mask-image: linear-gradient(180deg, #000 25%, transparent 90%);
+  mask-image: linear-gradient(180deg, #000 25%, transparent 90%);
 }
 
-/* Grayscale -> color on hover for sponsors */
+/* ── Gradient mesh for hero ──────────────────────────────────────── */
+.bg-hero-mesh {
+  background:
+    radial-gradient(55% 60% at 82% -10%, rgb(49 151 149 / 0.22), transparent 60%),
+    radial-gradient(45% 55% at 6% 4%, rgb(245 158 11 / 0.18), transparent 55%),
+    radial-gradient(60% 75% at 55% 120%, rgb(49 81 143 / 0.14), transparent 60%),
+    linear-gradient(180deg, #f2f7ff 0%, #edf3fb 50%, #f7fafc 100%);
+}
+
+/* ── Glassmorphism panel ─────────────────────────────────────────── */
+.glass {
+  background: rgb(255 255 255 / 0.55);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgb(255 255 255 / 0.7);
+}
+.glass-strong {
+  background: rgb(255 255 255 / 0.85);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgb(255 255 255 / 0.9);
+}
+
+/* ── Brand gradient text (navy → teal → amber) ───────────────────── */
+.text-brand-gradient {
+  background-image: linear-gradient(110deg, var(--color-navy-700) 0%, var(--color-teal-brand) 45%, var(--color-amber-brand) 105%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ── Float & blob animations ─────────────────────────────────────── */
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+.animate-float-slow {
+  animation: float-slow 6s ease-in-out infinite;
+}
+.animate-float-slower {
+  animation: float-slow 8s ease-in-out infinite;
+  animation-delay: 1.4s;
+}
+
+@keyframes blob-move {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(24px, -28px) scale(1.08);
+  }
+  66% {
+    transform: translate(-18px, 18px) scale(0.95);
+  }
+}
+.animate-blob {
+  animation: blob-move 18s ease-in-out infinite;
+}
+
+/* ── Grayscale → color on hover for sponsors ─────────────────────── */
 .marquee-grayscale img,
 .marquee-grayscale svg {
   filter: grayscale(100%);
@@ -89,7 +167,7 @@ body {
   opacity: 1;
 }
 
-/* Marquee animation */
+/* ── Marquee animation (RTL) ─────────────────────────────────────── */
 @keyframes marquee-rtl {
   from {
     transform: translateX(0);
@@ -107,7 +185,7 @@ body {
   animation-play-state: paused;
 }
 
-/* Reveal animation */
+/* ── Reveal animation ────────────────────────────────────────────── */
 @keyframes fade-up {
   from {
     opacity: 0;

@@ -277,7 +277,7 @@ export default function Listing() {
 
       <div className="lg:grid lg:grid-cols-4 lg:gap-8 items-start">
         {/* الفلاتر - الجانب (يمين في RTL) */}
-        <aside className="hidden lg:block lg:sticky lg:top-24 bg-white rounded-card border border-navy-100/70 shadow-card p-5">
+        <aside className="hidden lg:block lg:sticky lg:top-24 bg-white/80 backdrop-blur-sm rounded-card border border-navy-100/70 shadow-card p-5">
           {filtersPanel}
         </aside>
 

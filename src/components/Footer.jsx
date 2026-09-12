@@ -31,7 +31,26 @@ const legalLinks = [
 export default function Footer() {
   return (
     <footer className="bg-navy-900 text-slate-300 mt-16">
+      <div className="h-1 bg-gradient-to-l from-amber-brand via-teal-brand to-navy-500" aria-hidden="true" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-14 pb-8">
+        {/* بانر انضمام للشركات */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-l from-teal-brand-dark via-navy-800 to-navy-900 border border-navy-700 px-6 py-8 mb-12 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="absolute inset-0 bg-dots opacity-30" aria-hidden="true" />
+          <div className="relative">
+            <p className="text-white font-black text-xl md:text-2xl">هل لديك شركة أو مصنع؟</p>
+            <p className="text-slate-400 text-sm mt-1.5 leading-6 max-w-xl">
+              أضف بيانات نشاطك مجاناً في إيجي داير لتصلك استفسارات من آلاف العملاء المحتملين كل شهر.
+            </p>
+          </div>
+          <Link
+            to="/companies"
+            className="relative shrink-0 inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm font-black text-navy-900 bg-gradient-to-l from-amber-400 to-orange-500 shadow-lg hover:shadow-card-hover hover:-translate-y-0.5 transition-all"
+          >
+            أضف شركتك مجاناً
+            <ChevronLeft size={16} />
+          </Link>
+        </div>
+
         <div className="grid gap-10 lg:grid-cols-12">
           {/* نبذة */}
           <div className="lg:col-span-4 space-y-5">

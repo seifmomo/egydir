@@ -35,32 +35,39 @@ export function BrandLogo({ company, size = 'lg', className = '' }) {
 export default function CompanyCard({ company, index = 0 }) {
   return (
     <article
-      className="group relative bg-white rounded-card border border-navy-100/70 shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 p-5 flex flex-col"
+      className="group relative bg-white rounded-card border border-navy-100/70 shadow-card hover:shadow-card-hover hover:-translate-y-1 hover:ring-2 hover:ring-teal-brand/30 ring-offset-2 ring-offset-transparent transition-all duration-300 p-5 flex flex-col overflow-hidden"
       style={{ animationDelay: `${index * 60}ms` }}
     >
+      {/* خط علوي متدرج */}
+      <span
+        className="absolute inset-x-0 top-0 h-1 bg-gradient-to-l from-teal-brand via-navy-600 to-amber-brand opacity-0 group-hover:opacity-100 transition-opacity"
+        aria-hidden="true"
+      />
+      <span className="absolute -top-10 -end-10 w-24 h-24 rounded-full bg-navy-50/70 blur-2xl transition-colors group-hover:bg-teal-brand/10" aria-hidden="true" />
+
       {/* شارة موثق */}
       {company.verified && (
-        <span className="absolute top-4 end-4 inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 bg-blue-50 border border-blue-100 rounded-full px-2.5 py-1">
+        <span className="absolute top-4 end-4 inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 bg-blue-50 border border-blue-100 rounded-full px-2.5 py-1 shadow-sm">
           <BadgeCheck size={13} />
           موثّق
         </span>
       )}
 
-      <div className="flex items-start gap-3.5">
+      <div className="relative flex items-start gap-3.5">
         <BrandLogo company={company} />
         <div className="min-w-0 flex-1">
           <h3 className="font-bold text-navy-800 leading-snug truncate group-hover:text-teal-brand transition-colors">
             {company.name}
           </h3>
-          <p className="text-xs font-semibold text-slate-500 mt-0.5">{company.sector}</p>
+          <p className="text-xs font-bold text-teal-brand mt-0.5 truncate">{company.sector}</p>
           <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
             <span className="inline-flex items-center gap-1 min-w-0">
               <MapPin size={13} className="text-teal-brand shrink-0" />
               <span className="truncate">{company.city}</span>
             </span>
             {company.rating && (
-              <span className="inline-flex items-center gap-1 font-bold text-amber-500">
-                <Star size={13} fill="currentColor" />
+              <span className="inline-flex items-center gap-1 font-black text-amber-500 bg-amber-brand/10 border border-amber-brand/20 rounded-full px-2 py-0.5">
+                <Star size={12} fill="currentColor" />
                 {company.rating}
               </span>
             )}
@@ -68,12 +75,12 @@ export default function CompanyCard({ company, index = 0 }) {
         </div>
       </div>
 
-      <p className="mt-4 text-sm leading-6 text-slate-600 line-clamp-2 flex-1">{company.desc}</p>
+      <p className="relative mt-4 text-sm leading-6 text-slate-600 line-clamp-2 flex-1">{company.desc}</p>
 
-      <div className="flex items-center gap-2.5 mt-5 pt-4 border-t border-navy-50">
+      <div className="relative flex items-center gap-2.5 mt-5 pt-4 border-t border-navy-50">
         <Link
           to={`/companies/${company.id}`}
-          className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-bold text-white bg-navy-700 hover:bg-navy-800 shadow-card hover:shadow-card-hover transition-all"
+          className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-bold text-white bg-gradient-to-l from-navy-700 to-navy-800 hover:from-navy-800 hover:to-navy-900 shadow-card hover:shadow-card-hover transition-all"
         >
           عرض الملف
           <ChevronLeft size={16} />
@@ -81,7 +88,7 @@ export default function CompanyCard({ company, index = 0 }) {
         <a
           href={`tel:${company.phone?.replace(/\s/g, '') || ''}`}
           aria-label="اتصال"
-          className="grid place-items-center w-11 h-11 rounded-full border border-navy-200 text-navy-600 hover:border-teal-brand hover:text-teal-brand hover:bg-teal-brand/5 transition-colors"
+          className="grid place-items-center w-11 h-11 rounded-full border border-amber-brand/30 text-amber-600 hover:bg-amber-brand/10 hover:border-amber-brand transition-colors"
         >
           <Phone size={16} />
         </a>
