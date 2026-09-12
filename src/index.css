@@ -1,0 +1,132 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy-50: #eef2f9;
+  --color-navy-100: #d6deef;
+  --color-navy-200: #aebede;
+  --color-navy-300: #7f96c6;
+  --color-navy-400: #5170ad;
+  --color-navy-500: #31518f;
+  --color-navy-600: #233d70;
+  --color-navy-700: #1a365d;
+  --color-navy-800: #132a4a;
+  --color-navy-900: #0d1f38;
+  --color-navy-950: #081527;
+
+  --color-teal-brand: #319795;
+  --color-teal-brand-light: #38b2ac;
+  --color-teal-brand-dark: #2c7a7b;
+
+  --color-surface: #f7fafc;
+  --color-slate-ink: #2d3748;
+
+  --font-sans: "Tajawal", "Cairo", ui-sans-serif, system-ui, sans-serif;
+  --font-cairo: "Cairo", "Tajawal", ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-card: 0 1px 3px rgb(26 54 93 / 0.06), 0 8px 24px rgb(26 54 93 / 0.08);
+  --shadow-card-hover: 0 2px 6px rgb(26 54 93 / 0.08), 0 16px 40px rgb(26 54 93 / 0.14);
+
+  --radius-card: 12px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-surface);
+  color: var(--color-slate-ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background-color: var(--color-teal-brand);
+  color: #fff;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #edf2f7;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+/* Subtle dot pattern for hero background */
+.bg-dots {
+  background-image: radial-gradient(circle, rgb(26 54 93 / 0.08) 1px, transparent 1.2px);
+  background-size: 22px 22px;
+}
+
+/* Gradient mesh for hero */
+.bg-hero-mesh {
+  background:
+    radial-gradient(ellipse 60% 50% at 85% 0%, rgb(49 151 149 / 0.18), transparent 60%),
+    radial-gradient(ellipse 50% 60% at 8% 20%, rgb(26 54 93 / 0.16), transparent 60%),
+    linear-gradient(180deg, #f7fafc 0%, #edf2f7 100%);
+}
+
+/* Grayscale -> color on hover for sponsors */
+.marquee-grayscale img,
+.marquee-grayscale svg {
+  filter: grayscale(100%);
+  opacity: 0.6;
+  transition: filter 0.4s ease, opacity 0.4s ease;
+}
+.marquee-grayscale:hover img,
+.marquee-grayscale:hover svg {
+  filter: grayscale(0%);
+  opacity: 1;
+}
+
+/* Marquee animation */
+@keyframes marquee-rtl {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(50%);
+  }
+}
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee-rtl 45s linear infinite;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Reveal animation */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-up {
+  animation: fade-up 0.6s ease both;
+}
+
+/* Hide scrollbar for tab rows */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
