@@ -103,6 +103,84 @@ function CountUp({ end, started }) {
   return <>{v.toLocaleString('ar-EG')}</>
 }
 
+/* ── اللوحة البصرية: خريطة مصر + شبكة الشركات ──────────────────── */
+function EgyptNetwork() {
+  const nodes = [
+    { x: 101, y: 30, label: 'القاهرة' },
+    { x: 83, y: 14, label: 'الإسكندرية' },
+    { x: 116, y: 13, label: 'بورسعيد' },
+    { x: 121, y: 31, label: 'السويس' },
+    { x: 121, y: 91, label: 'الأقصر' },
+    { x: 125, y: 114, label: 'أسوان' },
+    { x: 45, y: 12, label: 'مرسى مطروح' },
+  ]
+  const links = [
+    [0, 1],
+    [0, 2],
+    [0, 3],
+    [0, 4],
+    [0, 5],
+    [0, 6],
+  ]
+  return (
+    <div className="relative animate-float-slow">
+      <div className="absolute -inset-4 bg-gradient-to-br from-teal-brand/20 via-navy-600/5 to-amber-brand/15 blur-2xl rounded-[2.5rem]" aria-hidden="true" />
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-navy-900 via-navy-800 to-teal-brand-dark/90 shadow-card-hover">
+        <div className="absolute inset-0 bg-dots opacity-50" aria-hidden="true" />
+        <svg viewBox="0 0 170 160" className="relative w-full h-auto" role="img" aria-label="خريطة مصر مع شبكة الشركات">
+          <defs>
+            <linearGradient id="linkGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#2dd4bf" />
+              <stop offset="100%" stopColor="#f59e0b" />
+            </linearGradient>
+          </defs>
+          {/* حدود مصر */}
+          <polygon
+            points="77,11.2 84,9.8 98,8.4 105,12.6 117,14 133,16.8 140,23.8 148,42 154,58.8 157,94 158,114.8 154,142.8 98,142.8 56,142.8 14,142.8 14,114.8 14,44.8 14,30.8 28,16.8 56,14 70,12.6"
+            fill="rgba(56,189,248,0.06)"
+            stroke="rgba(125,211,252,0.35)"
+            strokeWidth="1.2"
+            strokeLinejoin="round"
+          />
+          {/* وصلات الشبكة */}
+          {links.map(([a, b], i) => (
+            <line
+              key={i}
+              x1={nodes[a].x}
+              y1={nodes[a].y}
+              x2={nodes[b].x}
+              y2={nodes[b].y}
+              stroke="url(#linkGrad)"
+              strokeWidth="1"
+              strokeDasharray="4 3"
+              opacity="0.7"
+            />
+          ))}
+          {/* عقد الشركات */}
+          {nodes.map((n) => (
+            <g key={n.label}>
+              <circle cx={n.x} cy={n.y} r="6" fill="#0f172a" opacity="0.35" />
+              <circle cx={n.x} cy={n.y} r="3.4" fill="#2dd4bf" />
+              <text x={n.x + 8} y={n.y + 3} className="fill-white/90 text-[8px] font-bold">
+                {n.label}
+              </text>
+            </g>
+          ))}
+        </svg>
+        {/* شرائح معلقة */}
+        <span className="absolute top-5 end-5 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full glass text-[11px] font-bold text-white">
+          <Layers size={13} className="text-teal-brand-light" />
+          {stats.sectors.toLocaleString('ar-EG')} قطاعاً صناعياً
+        </span>
+        <span className="absolute bottom-5 start-5 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full glass text-[11px] font-bold text-white animate-float-slower">
+          <Building2 size={13} className="text-amber-brand" />
+          {stats.companies.toLocaleString('ar-EG')} شركة مسجلة
+        </span>
+      </div>
+    </div>
+  )
+}
+
 export default function Home() {
   const featured = featuredIds
     .map((id) => allCompanies.find((c) => c.id === id))
@@ -127,65 +205,76 @@ export default function Home() {
         {/* شبكة خفيفة */}
         <div className="absolute inset-0 bg-grid-slate mask-fade-b opacity-70" aria-hidden="true" />
 
-        {/* المحتوى المركزي */}
-        <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-16 pb-16 md:pt-24 md:pb-20 text-center">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-xs font-bold text-navy-700 shadow-sm mb-7 animate-fade-up">
-            <TrendingUp size={14} className="text-teal-brand" />
-            منصة الشركات الأولى في مصر
-            <Sparkles size={14} className="text-amber-brand" />
-          </span>
+        {/* المحتوى: أعمدة غير متساوية — النص يمين واللوحة البصرية يسار */}
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-16 pb-16 md:pt-24 md:pb-20">
+          <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-12 lg:gap-14 items-center">
+            <div className="text-center lg:text-start">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-xs font-bold text-navy-700 shadow-sm mb-7 animate-fade-up">
+                <TrendingUp size={14} className="text-teal-brand" />
+                منصة الشركات الأولى في مصر
+                <Sparkles size={14} className="text-amber-brand" />
+              </span>
 
-          <h1 className="font-cairo font-black text-navy-900 text-4xl sm:text-5xl md:text-6xl leading-[1.2]">
-            اكتشف أفضل
-            <span className="text-brand-gradient block sm:inline"> الشركات والمصانع </span>
-            في مصر
-          </h1>
+              <h1 className="font-cairo font-black text-navy-900 text-4xl sm:text-5xl xl:text-[3.6rem] leading-[1.2] animate-fade-up" style={{ animationDelay: '60ms' }}>
+                اكتشف أفضل
+                <span className="text-brand-gradient block sm:inline"> الشركات والمصانع </span>
+                في مصر
+              </h1>
 
-          <p className="mt-6 text-slate-600 text-base md:text-lg font-medium max-w-2xl mx-auto leading-8">
-            دليل تجاري متكامل يضم آلاف الشركات والمصانع والمستوردين والمصدرين في كل القطاعات —
-            تواصل مع الشركاء المناسبين خلال ثوانٍ.
-          </p>
+              <p className="mt-6 text-slate-600 text-base md:text-lg font-medium max-w-2xl mx-auto lg:mx-0 leading-8 animate-fade-up" style={{ animationDelay: '120ms' }}>
+                دليل تجاري متكامل يضم آلاف الشركات والمصانع والمستوردين والمصدرين في كل القطاعات —
+                تواصل مع الشركاء المناسبين خلال ثوانٍ.
+              </p>
 
-          <div className="mt-9 max-w-2xl mx-auto animate-fade-up" style={{ animationDelay: '120ms' }}>
-            <SearchBar size="lg" />
+              <div className="mt-9 max-w-2xl mx-auto lg:mx-0 animate-fade-up" style={{ animationDelay: '180ms' }}>
+                <SearchBar size="lg" />
+              </div>
+
+              {/* أزرار الإجراء الأساسية أسفل البحث */}
+              <div className="mt-7 flex flex-wrap justify-center lg:justify-start gap-3 animate-fade-up" style={{ animationDelay: '260ms' }}>
+                <Link
+                  to="/companies"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-bold text-white bg-gradient-to-l from-teal-brand via-navy-600 to-navy-800 shadow-glow hover:shadow-card-hover hover:-translate-y-0.5 transition-all"
+                >
+                  <Building2 size={16} />
+                  تصفح دليل الشركات
+                </Link>
+                <a
+                  href="#sections"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-bold text-navy-800 bg-white border border-navy-200 shadow-card hover:border-teal-brand hover:text-teal-brand hover:-translate-y-0.5 transition-all"
+                >
+                  استكشف القطاعات
+                  <ArrowLeft size={16} />
+                </a>
+              </div>
+
+              {/* أزرار البحث السريع كنقاط تفاعلية */}
+              <div className="mt-6 flex flex-wrap justify-center lg:justify-start gap-2 animate-fade-up" style={{ animationDelay: '340ms' }}>
+                {['أثاث منزلي', 'تمور وفواكه', 'مستلزمات طبية', 'مواسير بلاستيك', 'بولي بروبلين'].map((t) => (
+                  <Link
+                    key={t}
+                    to={`/companies?q=${encodeURIComponent(t)}`}
+                    className="px-4 py-2 rounded-full bg-white/80 ring-1 ring-navy-100 text-slate-600 font-bold text-xs hover:ring-teal-brand hover:text-teal-brand hover:-translate-y-0.5 shadow-sm transition-all"
+                  >
+                    {t}
+                  </Link>
+                ))}
+              </div>
+
+              <p className="mt-6 flex items-center justify-center lg:justify-start gap-1.5 text-xs font-bold text-slate-500 animate-fade-up" style={{ animationDelay: '400ms' }}>
+                <ShieldCheck size={14} className="text-teal-brand" />
+                أكثر من {stats.companies.toLocaleString('ar-EG')} شركة مسجلة في الدليل
+              </p>
+            </div>
+
+            {/* اللوحة البصرية — لجانب النهاية في الواجهة */}
+            <div className="hidden lg:block animate-fade-up" style={{ animationDelay: '220ms' }}>
+              <EgyptNetwork />
+            </div>
           </div>
-
-          <div className="mt-6 flex flex-wrap justify-center gap-2 text-sm animate-fade-up" style={{ animationDelay: '220ms' }}>
-            {['أثاث منزلي', 'تمور وفواكه', 'مستلزمات طبية', 'مواسير بلاستيك', 'بولي بروبلين'].map((t) => (
-              <Link
-                key={t}
-                to={`/companies?q=${encodeURIComponent(t)}`}
-                className="px-3.5 py-1.5 rounded-full glass text-slate-600 font-semibold hover:border-teal-brand hover:text-teal-brand transition-colors"
-              >
-                {t}
-              </Link>
-            ))}
-          </div>
-
-          <div className="mt-7 flex flex-wrap justify-center gap-3 animate-fade-up" style={{ animationDelay: '300ms' }}>
-            <Link
-              to="/companies"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-bold text-white bg-gradient-to-l from-teal-brand via-navy-600 to-navy-800 shadow-glow hover:shadow-card-hover hover:-translate-y-0.5 transition-all"
-            >
-              <Building2 size={16} />
-              تصفح دليل الشركات
-            </Link>
-            <a
-              href="#sections"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-bold text-navy-800 bg-white border border-navy-200 shadow-card hover:border-teal-brand hover:text-teal-brand hover:-translate-y-0.5 transition-all"
-            >
-              استكشف القطاعات
-              <ArrowLeft size={16} />
-            </a>
-          </div>
-
-          <p className="mt-6 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-500 animate-fade-up" style={{ animationDelay: '340ms' }}>
-            <ShieldCheck size={14} className="text-teal-brand" />
-            أكثر من {stats.companies.toLocaleString('ar-EG')} شركة مسجلة في الدليل
-          </p>
 
           {/* الإحصائيات */}
-          <div ref={statsRef} className="mt-10 animate-fade-up" style={{ animationDelay: '380ms' }}>
+          <div ref={statsRef} className="mt-14 animate-fade-up" style={{ animationDelay: '380ms' }}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
               {statsData.map((s) => (
                 <div key={s.label} className="glass-strong rounded-2xl shadow-card px-4 py-5 flex flex-col items-center gap-1.5">

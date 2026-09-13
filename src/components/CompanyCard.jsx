@@ -29,16 +29,34 @@ export function BrandLogo({ company, size = 'lg', className = '' }) {
       {show ? (
         <img src={url} alt={company.name} className="w-full h-full object-cover" loading="lazy" onError={() => setErr(true)} />
       ) : (
-        <span className="text-lg select-none">{company.name.trim().charAt(0)}</span>
+        <span className={`${size === 'sm' ? 'text-sm' : 'text-lg'} select-none`}>{company.name.trim().charAt(0)}</span>
       )}
     </span>
   )
 }
 
+/* لون شارة القطاع حسب النشاط */
+function sectorTagClass(sector) {
+  const s = sector || ''
+  if (/غذاء|تمور|معلبات|زيوت|حلويات|ألبان/.test(s)) return 'bg-emerald-50 text-emerald-700 border-emerald-200'
+  if (/بلاستيك|فيبر|PVC|بولي/.test(s)) return 'bg-cyan-50 text-cyan-700 border-cyan-200'
+  if (/خشب|أثاث|باركيه/.test(s)) return 'bg-amber-50 text-amber-700 border-amber-200'
+  if (/طبي|مستحضرات|تجميل/.test(s)) return 'bg-rose-50 text-rose-700 border-rose-200'
+  if (/زراع|أسمدة|علف|بيطري|تمور/.test(s)) return 'bg-green-50 text-green-700 border-green-200'
+  if (/معدن|حديد|صاج|استانلس/.test(s)) return 'bg-slate-100 text-slate-700 border-slate-200'
+  if (/تشييد|بناء|مقاول|أسمنت/.test(s)) return 'bg-orange-50 text-orange-700 border-orange-200'
+  if (/كيميا|دهانات|منظفات/.test(s)) return 'bg-purple-50 text-purple-700 border-purple-200'
+  if (/نسيج|ملابس|قماش|يونيفورم/.test(s)) return 'bg-pink-50 text-pink-700 border-pink-200'
+  if (/شحن|تخليص|لوجست/.test(s)) return 'bg-sky-50 text-sky-700 border-sky-200'
+  if (/طاقة|شمسي/.test(s)) return 'bg-yellow-50 text-yellow-700 border-yellow-200'
+  if (/معارض/.test(s)) return 'bg-indigo-50 text-indigo-700 border-indigo-200'
+  return 'bg-teal-50 text-teal-700 border-teal-200'
+}
+
 export default function CompanyCard({ company, index = 0 }) {
   return (
     <article
-      className="group relative bg-white rounded-card border border-navy-100/70 shadow-card hover:shadow-card-hover hover:-translate-y-1 hover:ring-2 hover:ring-teal-brand/30 ring-offset-2 ring-offset-transparent transition-all duration-300 p-5 flex flex-col overflow-hidden"
+      className="group relative bg-white rounded-card border border-navy-100/70 shadow-card hover:shadow-card-hover hover:-translate-y-1 hover:ring-2 hover:ring-teal-brand/30 ring-offset-2 ring-offset-transparent transition-all duration-300 p-4 flex flex-col overflow-hidden"
       style={{ animationDelay: `${index * 60}ms` }}
     >
       {/* خط علوي متدرج */}
@@ -48,52 +66,52 @@ export default function CompanyCard({ company, index = 0 }) {
       />
       <span className="absolute -top-10 -end-10 w-24 h-24 rounded-full bg-navy-50/70 blur-2xl transition-colors group-hover:bg-teal-brand/10" aria-hidden="true" />
 
-      {/* شارة موثق */}
-      {company.verified && (
-        <span className="absolute top-4 end-4 inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 bg-blue-50 border border-blue-100 rounded-full px-2.5 py-1 shadow-sm">
-          <BadgeCheck size={13} />
-          موثّق
-        </span>
-      )}
-
-      <div className="relative flex items-start gap-3.5">
+      <div className="relative flex items-start gap-3">
         <BrandLogo company={company} />
         <div className="min-w-0 flex-1">
-          <h3 className="font-bold text-navy-800 leading-snug truncate group-hover:text-teal-brand transition-colors">
+          <h3 className="font-bold text-navy-800 leading-snug truncate group-hover:text-teal-brand transition-colors text-[15px]">
             {company.name}
           </h3>
-          <p className="text-xs font-bold text-teal-brand mt-0.5 truncate">{company.sector}</p>
-          <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
-            <span className="inline-flex items-center gap-1 min-w-0">
-              <MapPin size={13} className="text-teal-brand shrink-0" />
-              <span className="truncate">{company.city}</span>
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+            {company.verified && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-100 rounded-full px-2 py-0.5">
+                <BadgeCheck size={11} />
+                موثّق
+              </span>
+            )}
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${sectorTagClass(company.sector)}`}>
+              {company.sector}
             </span>
             {company.rating && (
-              <span className="inline-flex items-center gap-1 font-black text-amber-500 bg-amber-brand/10 border border-amber-brand/20 rounded-full px-2 py-0.5">
-                <Star size={12} fill="currentColor" />
+              <span className="inline-flex items-center gap-0.5 text-[10px] font-black text-amber-600 bg-amber-brand/10 border border-amber-brand/20 rounded-full px-1.5 py-0.5">
+                <Star size={10} fill="currentColor" />
                 {company.rating}
               </span>
             )}
           </div>
+          <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-slate-500 min-w-0">
+            <MapPin size={11} className="text-teal-brand shrink-0" />
+            <span className="truncate">{company.city}</span>
+          </div>
         </div>
       </div>
 
-      <p className="relative mt-4 text-sm leading-6 text-slate-600 line-clamp-2 flex-1">{company.desc}</p>
+      <p className="relative mt-3 text-[13px] leading-6 text-slate-600 line-clamp-2 flex-1">{company.desc}</p>
 
-      <div className="relative flex items-center gap-2.5 mt-5 pt-4 border-t border-navy-50">
+      <div className="relative flex items-center justify-between gap-2 mt-4 pt-3 border-t border-navy-50">
         <Link
           to={`/companies/${company.id}`}
-          className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-bold text-white bg-gradient-to-l from-navy-700 to-navy-800 hover:from-navy-800 hover:to-navy-900 shadow-card hover:shadow-card-hover transition-all"
+          className="inline-flex items-center gap-1 text-xs font-bold text-teal-brand hover:text-teal-brand-dark transition-colors"
         >
           عرض الملف
-          <ChevronLeft size={16} />
+          <ChevronLeft size={14} />
         </Link>
         <a
           href={`tel:${company.phone?.replace(/\s/g, '') || ''}`}
           aria-label="اتصال"
-          className="grid place-items-center w-11 h-11 rounded-full border border-amber-brand/30 text-amber-600 hover:bg-amber-brand/10 hover:border-amber-brand transition-colors"
+          className="grid place-items-center w-8 h-8 rounded-full border border-amber-brand/30 text-amber-600 hover:bg-amber-brand/10 hover:border-amber-brand transition-colors"
         >
-          <Phone size={16} />
+          <Phone size={13} />
         </a>
       </div>
     </article>

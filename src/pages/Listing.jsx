@@ -153,7 +153,8 @@ export default function Listing() {
   const type = params.get('type') || 'all'
 
   const [search, setSearch] = useState(q)
-  const [selectedCities, setSelectedCities] = useState([])
+  const initCity = params.get('city') || ''
+  const [selectedCities, setSelectedCities] = useState(initCity ? [initCity] : [])
   const [onlyVerified, setOnlyVerified] = useState(false)
   const [minRating, setMinRating] = useState(0)
   const [sort, setSort] = useState('featured')
