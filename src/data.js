@@ -753,10 +753,12 @@ export const companies = [
   },
 ]
 
+import { demoCompanies } from './demo-data.js'
+
 // إضافة الحقول المساعدة
 export const categories = sectors
 
-export const allCompanies = companies.map((c) => ({
+export const allCompanies = [...companies, ...demoCompanies].map((c) => ({
   ...c,
   sector: c.sectorLabel || sectorName(c.sectorId),
   rating: c.rating ?? 4 + ((c.id * 7) % 10) / 10,
@@ -809,8 +811,8 @@ export const sponsors = [
 ]
 
 export const stats = {
-  companies: 12480,
-  factories: 5320,
+  companies: allCompanies.length,
+  factories: allCompanies.filter((c) => /(مصنع|تصنيع|إنتاج)/.test(`${c.name} ${c.desc}`)).length,
   sectors: sectors.length,
   cities: cities.length,
 }

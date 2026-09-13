@@ -40,6 +40,12 @@ const typeOf = (c) => {
   return 'company'
 }
 
+const tokenize = (s) =>
+  s
+    .split(/\s+/)
+    .map((w) => w.replace(/^و/, ''))
+    .filter(Boolean)
+
 /* ── مكوّنات الفلاتر ─────────────────────────────────────────── */
 function Radio({ checked, onChange, label, name }) {
   return (
@@ -177,29 +183,41 @@ export default function Listing() {
 
   const results = useMemo(() => {
     const sectorBySlug = Object.fromEntries(sectors.map((s) => [s.slug, s.id]))
-    let list = allCompanies.filter((c) => {
-      if (activeCategory && c.sectorId !== sectorBySlug[activeCategory]) return false
-      if (type !== 'all' && typeOf(c) !== type) return false
-      const hay = `${c.name} ${c.sector} ${c.desc} ${c.city}`
-      if (q && !hay.includes(q)) return false
-      if (search && !hay.includes(search)) return false
-      if (selectedCities.length && !selectedCities.includes(c.city)) return false
-      if (onlyVerified && !c.verified) return false
-      if (minRating && (c.rating || 0) < minRating) return false
-      return true
-    })
-
-    switch (sort) {
-      case 'name':
-        list = [...list].sort((a, b) => a.name.localeCompare(b.name, 'ar'))
-        break
-      case 'verified':
-        list = [...list].sort((a, b) => Number(b.verified) - Number(a.verified) || (b.rating || 0) - (a.rating || 0))
-        break
-      default:
-        list = [...list].sort((a, b) => Number(b.verified) - Number(a.verified) || (b.rating || 0) - (a.rating || 0))
+    const qTokens = q ? tokenize(q) : []
+    const sTokens = search ? tokenize(search) : []
+    const matchSet = (hay, tokens) => {
+      let matched = 0
+      for (const t of tokens) if (hay.includes(t)) matched += 1
+      return matched
     }
-    return list
+    let list = allCompanies
+      .map((c) => {
+        if (activeCategory && c.sectorId !== sectorBySlug[activeCategory]) return null
+        if (type !== 'all' && typeOf(c) !== type) return null
+        if (selectedCities.length && !selectedCities.includes(c.city)) return null
+        if (onlyVerified && !c.verified) return null
+        if (minRating && (c.rating || 0) < minRating) return null
+        const hay = `${c.name} ${c.sector} ${c.desc} ${c.city}`
+        let score = 0
+        if (q) {
+          const m = matchSet(hay, qTokens)
+          if (!m) return null
+          score += m
+        }
+        if (search) {
+          const m = matchSet(hay, sTokens)
+          if (!m) return null
+          score += m
+        }
+        return { c, score }
+      })
+      .filter(Boolean)
+      .sort((a, b) => {
+        if (b.score !== a.score) return b.score - a.score
+        if (sort === 'name') return a.c.name.localeCompare(b.c.name, 'ar')
+        return Number(b.c.verified) - Number(a.c.verified) || (b.c.rating || 0) - (a.c.rating || 0)
+      })
+    return list.map((x) => x.c)
   }, [activeCategory, q, search, type, selectedCities, onlyVerified, minRating, sort])
 
   const activeSector = sectors.find((s) => s.slug === activeCategory)
@@ -337,23 +355,52 @@ export default function Listing() {
         <div className="absolute inset-0 bg-dots opacity-40" aria-hidden="true" />
         <div className="absolute -top-12 -end-12 w-52 h-52 rounded-full bg-teal-brand/25 blur-3xl" aria-hidden="true" />
         <div className="absolute -bottom-14 -start-10 w-56 h-56 rounded-full bg-amber-brand/20 blur-3xl" aria-hidden="true" />
-        <div className="relative">
-          <nav className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 mb-3">
-            <Link to="/" className="inline-flex items-center gap-1 hover:text-white transition-colors">
-              <Home size={13} />
-              الرئيسية
-            </Link>
-            <span className="text-slate-500">/</span>
-            <span className="text-teal-brand-light">دليل الشركات</span>
-          </nav>
-          <h1 className="font-cairo font-black text-2xl md:text-3xl">{activeSector?.name || 'دليل الشركات والمصانع'}</h1>
-          <p className="mt-2 text-sm font-semibold text-slate-300 flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15">
-              <Building2 size={13} className="text-teal-brand-light" />
-              {results.length.toLocaleString('ar-EG')} نتيجة
+        <div className="relative flex items-start justify-between gap-6">
+          <div className="min-w-0">
+            <nav className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 mb-4">
+              <Link to="/" className="inline-flex items-center gap-1 hover:text-white transition-colors">
+                <Home size={13} />
+                الرئيسية
+              </Link>
+              <span className="text-slate-500">/</span>
+              <span className="text-teal-brand-light">دليل الشركات والمصانع</span>
+            </nav>
+            <h1 className="font-cairo font-black text-white text-3xl md:text-4xl leading-tight">
+              {activeSector?.name || 'دليل الشركات والمصانع'}
+            </h1>
+            {activeSector ? (
+              <p className="mt-2.5 text-sm font-bold text-teal-brand-light">
+                شركات ومصانع «{activeSector.name}» في مصر
+              </p>
+            ) : (
+              <p className="mt-2.5 text-sm font-semibold text-slate-300">
+                تصفح الشركات والمصانع والمستوردين والمصدرين في كل القطاعات
+              </p>
+            )}
+            <div className="mt-5 flex flex-wrap gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/15 text-xs font-bold">
+                <Building2 size={13} className="text-teal-brand-light" />
+                {results.length.toLocaleString('ar-EG')} نتيجة
+              </span>
+              {type !== 'all' && (
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/15 text-xs font-bold">
+                  {typeLabel?.label}
+                </span>
+              )}
+              {q && (
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/15 text-xs font-bold">
+                  بحث «{q}»
+                </span>
+              )}
+            </div>
+          </div>
+          {/* ختم موثّق */}
+          <div className="hidden sm:flex flex-col items-center gap-2 shrink-0">
+            <span className="grid place-items-center w-16 h-16 rounded-full border-2 border-dashed border-white/40 text-white">
+              <BadgeCheck size={26} />
             </span>
-            {q && <span>مطابقة لبحث «{q}»</span>}
-          </p>
+            <span className="text-[10px] font-black text-teal-brand-light">قائمة موثّقة</span>
+          </div>
         </div>
       </div>
 

@@ -23,11 +23,17 @@ import {
   PhoneCall,
   RefreshCcw,
   Users,
+  Star,
+  SearchCheck,
 } from 'lucide-react'
 import SearchBar from '../components/SearchBar'
 import CompanyCard from '../components/CompanyCard'
+import BrandLogo from '../components/CompanyCard'
 import SponsorsMarquee from '../components/SponsorsMarquee'
-import { categories, allCompanies, stats } from '../data'
+import { categories, sectors, allCompanies, stats } from '../data'
+
+const sectorBySlug = Object.fromEntries(sectors.map((s) => [s.slug, s.id]))
+const countFor = (slug) => allCompanies.filter((c) => c.sectorId === sectorBySlug[slug]).length
 
 /* ── مجموعة القطاعات مع لون مميز لكل قطاع ─────────────────────── */
 const categoryGroups = [
@@ -60,6 +66,85 @@ const statsData = [
   { icon: Store, end: stats.sectors, label: 'قطاع اقتصادي' },
   { icon: Users, end: stats.cities, label: 'مدينة صناعية' },
 ]
+
+/* ── معاينة نافذة التطبيق (تظهر فقط على الشاشات الكبيرة) ───────── */
+function MockupPreview() {
+  const companies = featuredIds
+    .map((id) => allCompanies.find((c) => c.id === id))
+    .filter(Boolean)
+    .slice(0, 6)
+  return (
+    <div className="relative animate-float-slow">
+      <div className="absolute -inset-5 bg-gradient-to-br from-teal-brand/25 via-navy-600/10 to-amber-brand/25 blur-2xl rounded-[2rem]" aria-hidden="true" />
+      <div className="relative glass-strong rounded-2xl shadow-card-hover overflow-hidden">
+        {/* شريط النافذة */}
+        <div className="flex items-center gap-1.5 px-4 py-3 bg-navy-800/95">
+          <span className="w-3 h-3 rounded-full bg-rose-400" />
+          <span className="w-3 h-3 rounded-full bg-amber-400" />
+          <span className="w-3 h-3 rounded-full bg-emerald-400" />
+          <span dir="ltr" className="ms-3 flex-1 truncate text-[11px] font-semibold text-slate-300 bg-white/10 rounded-full px-3 py-1">
+            egydir.com/ar/sections/company
+          </span>
+        </div>
+        <div className="p-4 space-y-3 bg-surface/80">
+          {/* بانر مصغّر */}
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-l from-navy-900 via-navy-700 to-teal-brand-dark px-4 py-4">
+            <div className="absolute inset-0 bg-dots opacity-40" aria-hidden="true" />
+            <div className="relative flex items-center justify-between">
+              <div>
+                <p className="text-white font-black text-sm">الشركات المميزة اليوم</p>
+                <p className="text-slate-300 text-[11px] font-semibold mt-0.5">نخبة موثّقة من كل القطاعات</p>
+              </div>
+              <span className="grid place-items-center w-9 h-9 rounded-xl bg-white/15 text-white">
+                <Star size={16} fill="currentColor" />
+              </span>
+            </div>
+          </div>
+          {/* بطاقات مصغّرة */}
+          <div className="grid grid-cols-2 gap-3">
+            {companies.map((c) => (
+              <div key={c.id} className="bg-white rounded-xl border border-navy-100/70 shadow-card p-3">
+                <div className="flex items-center gap-2">
+                  <BrandLogo company={c} size="sm" />
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-bold text-navy-800 truncate">{c.name}</p>
+                    {c.verified && (
+                      <p className="flex items-center gap-0.5 text-[9px] font-black text-blue-600 mt-0.5">
+                        <BadgeCheck size={10} /> موثّق
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-2.5 flex items-center justify-between gap-2">
+                  <p className="text-[9px] font-bold text-teal-brand truncate">{c.sector}</p>
+                  <span className="flex items-center gap-0.5 text-[9px] font-black text-amber-500">
+                    <Star size={9} fill="currentColor" />{(c.rating || 4).toFixed(1)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* نتائج البحث */}
+          <div className="flex items-center justify-between gap-2 rounded-lg bg-navy-50/80 px-3 py-2">
+            <span className="flex items-center gap-1.5 text-[10px] font-black text-navy-700">
+              <SearchCheck size={12} className="text-teal-brand" />
+              {allCompanies.length.toLocaleString('ar-EG')} شركة في دليل إيجي داير
+            </span>
+            <span className="text-[9px] font-bold text-slate-400">تحديث اليوم</span>
+          </div>
+        </div>
+      </div>
+      {/* شارة بحث مباشر */}
+      <div className="absolute -bottom-4 -start-4 flex items-center gap-2 bg-white rounded-full pl-3 pe-4 py-2 shadow-card-hover border border-navy-100">
+        <span className="relative flex w-2.5 h-2.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-brand opacity-60" />
+          <span className="relative inline-flex rounded-full w-2.5 h-2.5 bg-teal-brand" />
+        </span>
+        <span className="text-[11px] font-bold text-navy-800">بحث مباشر عن الشركات</span>
+      </div>
+    </div>
+  )
+}
 
 /* ── عدّاد متحرك عند الظهور ────────────────────────────────────── */
 function useInView(ref) {
@@ -124,65 +209,75 @@ export default function Home() {
         {/* شبكة خفيفة */}
         <div className="absolute inset-0 bg-grid-slate mask-fade-b opacity-70" aria-hidden="true" />
 
-        {/* المحتوى المركزي */}
-        <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-16 pb-16 md:pt-24 md:pb-20 text-center">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-xs font-bold text-navy-700 shadow-sm mb-7 animate-fade-up">
-            <TrendingUp size={14} className="text-teal-brand" />
-            منصة الشركات الأولى في مصر
-            <Sparkles size={14} className="text-amber-brand" />
-          </span>
+        {/* المحتوى: عمودان */}
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-14 pb-14 md:pt-20 md:pb-16">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-14 items-center">
+            {/* عمود النص */}
+            <div className="text-center lg:text-start">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-xs font-bold text-navy-700 shadow-sm mb-7 animate-fade-up">
+                <TrendingUp size={14} className="text-teal-brand" />
+                منصة الشركات الأولى في مصر
+                <Sparkles size={14} className="text-amber-brand" />
+              </span>
 
-          <h1 className="font-cairo font-black text-navy-900 text-4xl md:text-[4.2rem] leading-[1.15] tracking-tight">
-            اكتشف أفضل
-            <span className="text-brand-gradient block sm:inline"> الشركات والمصانع </span>
-            في مصر
-          </h1>
+              <h1 className="font-cairo font-black text-navy-900 text-4xl md:text-5xl xl:text-[3.7rem] leading-[1.15] tracking-tight">
+                اكتشف أفضل
+                <span className="text-brand-gradient block"> الشركات والمصانع </span>
+                في مصر
+              </h1>
 
-          <p className="mt-6 text-slate-600 text-base md:text-lg font-medium max-w-2xl mx-auto leading-8">
-            دليل تجاري متكامل يضم آلاف الشركات والمصانع والمستوردين والمصدرين في كل القطاعات —
-            تواصل مع الشركاء المناسبين خلال ثوانٍ.
-          </p>
+              <p className="mt-6 text-slate-600 text-base md:text-lg font-medium max-w-2xl leading-8">
+                دليل تجاري متكامل يضم آلاف الشركات والمصانع والمستوردين والمصدرين في كل القطاعات —
+                تواصل مع الشركاء المناسبين خلال ثوانٍ.
+              </p>
 
-          <div className="mt-9 max-w-2xl mx-auto animate-fade-up" style={{ animationDelay: '120ms' }}>
-            <SearchBar size="lg" />
+              <div className="mt-9 max-w-2xl lg:max-w-xl animate-fade-up" style={{ animationDelay: '120ms' }}>
+                <SearchBar size="lg" />
+              </div>
+
+              <div className="mt-6 flex flex-wrap justify-center lg:justify-start gap-2 text-sm animate-fade-up" style={{ animationDelay: '220ms' }}>
+                {['أثاث منزلي', 'تمور وفواكه', 'مستلزمات طبية', 'مواسير بلاستيك', 'بولي بروبلين'].map((t) => (
+                  <Link
+                    key={t}
+                    to={`/companies?q=${encodeURIComponent(t)}`}
+                    className="px-3.5 py-1.5 rounded-full glass text-slate-600 font-semibold hover:border-teal-brand hover:text-teal-brand transition-colors"
+                  >
+                    {t}
+                  </Link>
+                ))}
+              </div>
+
+              <div className="mt-7 flex flex-wrap justify-center lg:justify-start gap-3 animate-fade-up" style={{ animationDelay: '300ms' }}>
+                <Link
+                  to="/companies"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-bold text-white bg-gradient-to-l from-teal-brand via-navy-600 to-navy-800 shadow-glow hover:shadow-card-hover hover:-translate-y-0.5 transition-all"
+                >
+                  <Building2 size={16} />
+                  تصفح دليل الشركات
+                </Link>
+                <Link
+                  to="/companies"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-bold text-navy-900 bg-gradient-to-l from-amber-400 to-orange-500 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all"
+                >
+                  <Sparkles size={16} />
+                  أضف شركتك مجاناً
+                </Link>
+              </div>
+
+              <p className="mt-6 flex items-center justify-center lg:justify-start gap-1.5 text-xs font-bold text-slate-500 animate-fade-up" style={{ animationDelay: '340ms' }}>
+                <ShieldCheck size={14} className="text-teal-brand" />
+                أكثر من {stats.companies.toLocaleString('ar-EG')} شركة مسجلة — التسجيل مجاني لأصحاب الأعمال
+              </p>
+            </div>
+
+            {/* عمود المعاينة */}
+            <div className="hidden lg:block">
+              <MockupPreview />
+            </div>
           </div>
-
-          <div className="mt-6 flex flex-wrap justify-center gap-2 text-sm animate-fade-up" style={{ animationDelay: '220ms' }}>
-            {['أثاث منزلي', 'تمور وفواكه', 'مستلزمات طبية', 'مواسير بلاستيك', 'بولي بروبلين'].map((t) => (
-              <Link
-                key={t}
-                to={`/companies?q=${encodeURIComponent(t)}`}
-                className="px-3.5 py-1.5 rounded-full glass text-slate-600 font-semibold hover:border-teal-brand hover:text-teal-brand transition-colors"
-              >
-                {t}
-              </Link>
-            ))}
-          </div>
-
-          <div className="mt-7 flex flex-wrap justify-center gap-3 animate-fade-up" style={{ animationDelay: '300ms' }}>
-            <Link
-              to="/companies"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-bold text-white bg-gradient-to-l from-teal-brand via-navy-600 to-navy-800 shadow-glow hover:shadow-card-hover hover:-translate-y-0.5 transition-all"
-            >
-              <Building2 size={16} />
-              تصفح دليل الشركات
-            </Link>
-            <Link
-              to="/companies"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full text-sm font-bold text-navy-900 bg-gradient-to-l from-amber-400 to-orange-500 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all"
-            >
-              <Sparkles size={16} />
-              أضف شركتك مجاناً
-            </Link>
-          </div>
-
-          <p className="mt-6 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-500 animate-fade-up" style={{ animationDelay: '340ms' }}>
-            <ShieldCheck size={14} className="text-teal-brand" />
-            أكثر من {stats.companies.toLocaleString('ar-EG')} شركة مسجلة — التسجيل مجاني لأصحاب الأعمال
-          </p>
 
           {/* الإحصائيات */}
-          <div ref={statsRef} className="mt-10 animate-fade-up" style={{ animationDelay: '380ms' }}>
+          <div ref={statsRef} className="mt-12 md:mt-16 animate-fade-up" style={{ animationDelay: '380ms' }}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
               {statsData.map((s) => (
                 <div key={s.label} className="glass-strong rounded-2xl shadow-card px-4 py-5 flex flex-col items-center gap-1.5">
@@ -234,7 +329,7 @@ export default function Home() {
               </span>
               <h3 className="mt-4 font-bold text-navy-800 leading-snug relative">{cat.label}</h3>
               <p className="mt-1 text-xs font-bold text-slate-400 relative">
-                {cat.count.toLocaleString('ar-EG')} شركة
+                {countFor(cat.slug).toLocaleString('ar-EG')} شركة
               </p>
             </Link>
           ))}
