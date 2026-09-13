@@ -18,17 +18,14 @@ import {
   Building2,
   BadgeCheck,
   Sparkles,
-  Star,
   ShieldCheck,
   Zap,
   PhoneCall,
   RefreshCcw,
   Users,
-  MapPin,
-  ChevronLeft,
 } from 'lucide-react'
 import SearchBar from '../components/SearchBar'
-import CompanyCard, { BrandLogo } from '../components/CompanyCard'
+import CompanyCard from '../components/CompanyCard'
 import SponsorsMarquee from '../components/SponsorsMarquee'
 import { categories, allCompanies, stats } from '../data'
 
@@ -103,54 +100,10 @@ function CountUp({ end, started }) {
   return <>{v.toLocaleString('ar-EG')}</>
 }
 
-/* ── بطاقة شركة عائمة في الهيرو ───────────────────────────────── */
-function FloatCard({ company, className = '' }) {
-  return (
-    <Link
-      to={`/companies/${company.id}`}
-      className={`group glass-strong rounded-2xl shadow-card-hover p-4 w-60 transition-transform hover:-translate-y-1 ${className}`}
-    >
-      <div className="flex items-center gap-3">
-        <BrandLogo company={company} size="sm" />
-        <div className="min-w-0">
-          <p className="font-bold text-navy-800 text-sm leading-snug truncate">{company.name}</p>
-          <p className="text-[11px] font-bold text-teal-brand truncate">{company.sector}</p>
-        </div>
-      </div>
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-navy-50">
-        <span className="flex items-center gap-1 text-xs font-black text-amber-500">
-          <Star size={13} fill="currentColor" />
-          {(company.rating || 4.3).toFixed(1)}
-        </span>
-        <span className="flex items-center gap-1 text-[11px] font-bold text-navy-600 group-hover:text-teal-brand transition-colors">
-          عرض الملف
-          <ChevronLeft size={12} />
-        </span>
-      </div>
-    </Link>
-  )
-}
-
-/* ── منتج تمثيلي عائم في الهيرو ───────────────────────────────── */
-function FloatTile({ className = '' }) {
-  return (
-    <div className={`glass rounded-2xl shadow-card-hover p-4 w-44 animate-float-slower ${className}`}>
-      <div className="h-16 rounded-lg bg-gradient-to-br from-teal-brand to-navy-700 grid place-items-center text-white shadow-glow">
-        <Store size={22} />
-      </div>
-      <p className="mt-2.5 text-xs font-black text-navy-800">منتجات متعددة القطاعات</p>
-      <p className="text-[10px] font-semibold text-slate-400 mt-0.5">يُحدَّث لحظياً</p>
-    </div>
-  )
-}
-
 export default function Home() {
   const featured = featuredIds
     .map((id) => allCompanies.find((c) => c.id === id))
     .filter(Boolean)
-
-  const floatA = allCompanies.find((c) => c.id === 624)
-  const floatB = allCompanies.find((c) => c.id === 3446)
 
   const statsRef = useRef(null)
   const statsInView = useInView(statsRef)
@@ -170,21 +123,6 @@ export default function Home() {
 
         {/* شبكة خفيفة */}
         <div className="absolute inset-0 bg-grid-slate mask-fade-b opacity-70" aria-hidden="true" />
-
-        {/* بطاقات عائمة - شاشات كبيرة */}
-        {floatA && (
-          <div className="absolute top-24 start-6 xl:start-12 hidden lg:block animate-float-slow z-10">
-            <FloatCard company={floatA} />
-          </div>
-        )}
-        {floatB && (
-          <div className="absolute bottom-28 end-6 xl:end-12 hidden lg:block animate-float-slower z-10">
-            <FloatCard company={floatB} />
-          </div>
-        )}
-        <div className="absolute top-1/2 end-10 hidden xl:block z-10">
-          <FloatTile />
-        </div>
 
         {/* المحتوى المركزي */}
         <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-16 pb-16 md:pt-24 md:pb-20 text-center">
@@ -238,16 +176,21 @@ export default function Home() {
             </Link>
           </div>
 
+          <p className="mt-6 flex items-center justify-center gap-1.5 text-xs font-bold text-slate-500 animate-fade-up" style={{ animationDelay: '340ms' }}>
+            <ShieldCheck size={14} className="text-teal-brand" />
+            أكثر من {stats.companies.toLocaleString('ar-EG')} شركة مسجلة — التسجيل مجاني لأصحاب الأعمال
+          </p>
+
           {/* الإحصائيات */}
-          <div ref={statsRef} className="mt-12 animate-fade-up" style={{ animationDelay: '380ms' }}>
-            <div className="glass-strong rounded-2xl shadow-card grid grid-cols-2 md:grid-cols-4 divide-x divide-x-reverse divide-navy-100">
+          <div ref={statsRef} className="mt-10 animate-fade-up" style={{ animationDelay: '380ms' }}>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
               {statsData.map((s) => (
-                <div key={s.label} className="flex flex-col items-center gap-1 py-5 px-2">
+                <div key={s.label} className="glass-strong rounded-2xl shadow-card px-4 py-5 flex flex-col items-center gap-1.5">
                   <span className="grid place-items-center w-9 h-9 rounded-lg bg-gradient-to-br from-teal-brand to-navy-600 text-white shadow-sm">
                     <s.icon size={16} />
                   </span>
                   <p className="font-black text-navy-800 text-xl md:text-2xl">
-                    {statsInView ? <CountUp end={s.end} started /> : 0}
+                    {statsInView ? <CountUp end={s.end} started /> : '0'}
                   </p>
                   <p className="text-[11px] font-bold text-slate-500">{s.label}</p>
                 </div>

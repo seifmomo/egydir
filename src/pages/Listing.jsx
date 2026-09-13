@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   SlidersHorizontal,
@@ -10,6 +10,9 @@ import {
   Star,
   MapPin,
   RotateCcw,
+  Check,
+  ArrowDownUp,
+  Home,
 } from 'lucide-react'
 import CompanyCard from '../components/CompanyCard'
 import { sectors, cities, allCompanies } from '../data'
@@ -22,7 +25,50 @@ const typeOptions = [
   { value: 'export', label: 'مصدرون' },
 ]
 
-function Collapsible({ title, icon: Icon, defaultOpen = false, children }) {
+const sortOptions = [
+  { value: 'featured', label: 'الأكثر تميزاً' },
+  { value: 'verified', label: 'الموثّق أولاً' },
+  { value: 'name', label: 'الترتيب الأبجدي' },
+]
+
+/* تصنيف النشاط من بيانات الشركة */
+const typeOf = (c) => {
+  const t = `${c.name} ${c.desc}`
+  if (/(مصنع|تصنيع|إنتاج)/.test(t)) return 'factory'
+  if (/(تصدير)/.test(t)) return 'export'
+  if (/(استيراد|توزيع|تخليص|شحن|توريد)/.test(t)) return 'import'
+  return 'company'
+}
+
+/* ── مكوّنات الفلاتر ─────────────────────────────────────────── */
+function Radio({ checked, onChange, label, name }) {
+  return (
+    <label className="group flex items-center gap-2.5 cursor-pointer text-sm text-slate-600 hover:text-navy-800">
+      <input type="radio" name={name} checked={checked} onChange={onChange} className="sr-only" />
+      <span className="grid place-items-center w-5 h-5 rounded-full border-2 border-navy-200 bg-white transition-colors group-has-[:checked]:border-teal-brand">
+        <span className="w-2 h-2 rounded-full bg-gradient-to-br from-teal-brand to-navy-600 opacity-0 transition-opacity group-has-[:checked]:opacity-100" />
+      </span>
+      <span className="flex-1">{label}</span>
+    </label>
+  )
+}
+
+function Checkbox({ checked, onChange, label, count }) {
+  return (
+    <label className="group flex items-center gap-2.5 cursor-pointer text-sm text-slate-600 hover:text-navy-800">
+      <input type="checkbox" checked={checked} onChange={onChange} className="sr-only" />
+      <span className="grid place-items-center w-5 h-5 rounded-md border-2 border-navy-200 bg-white text-white transition-all duration-200 group-has-[:checked]:bg-gradient-to-br group-has-[:checked]:from-teal-brand group-has-[:checked]:to-navy-600 group-has-[:checked]:border-transparent group-has-[:checked]:shadow-sm">
+        <Check size={12} strokeWidth={3.5} />
+      </span>
+      <span className="flex-1">{label}</span>
+      {typeof count === 'number' && count > 0 && (
+        <span className="text-[10px] font-bold text-slate-400">{count.toLocaleString('ar-EG')}</span>
+      )}
+    </label>
+  )
+}
+
+function Collapsible({ title, icon: Icon, defaultOpen = false, badge, children }) {
   const [open, setOpen] = useState(defaultOpen)
   return (
     <div className="border-b border-navy-100 last:border-0">
@@ -30,17 +76,70 @@ function Collapsible({ title, icon: Icon, defaultOpen = false, children }) {
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between py-3.5 text-sm font-bold text-navy-800 hover:text-teal-brand transition-colors"
       >
-        <span className="flex items-center gap-2">
-          <Icon size={16} className="text-slate-400" />
+        <span className="flex items-center gap-2.5">
+          <span className="grid place-items-center w-7 h-7 rounded-lg bg-navy-50 text-navy-600 shrink-0">
+            <Icon size={14} />
+          </span>
           {title}
+          {badge ? (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-black text-teal-brand bg-teal-brand/10">{badge}</span>
+          ) : null}
         </span>
-        <ChevronDown size={16} className={`text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown size={16} className={`text-slate-400 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
       </button>
-      {open && <div className="pb-4 animate-fade-up">{children}</div>}
+      <div className={`grid transition-all duration-300 ease-in-out ${open ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+        <div className="overflow-hidden">{children}</div>
+      </div>
     </div>
   )
 }
 
+function SortMenu({ value, onChange }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+  useEffect(() => {
+    const onDoc = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('click', onDoc)
+    return () => document.removeEventListener('click', onDoc)
+  }, [])
+  const current = sortOptions.find((o) => o.value === value) || sortOptions[0]
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="inline-flex items-center gap-2 h-11 rounded-full border border-navy-200 bg-white px-4 pe-4 text-sm font-bold text-navy-700 hover:border-teal-brand transition-colors"
+      >
+        <ArrowDownUp size={15} className="text-teal-brand" />
+        <span className="hidden sm:inline text-slate-400 font-semibold">الترتيب:</span>
+        {current.label}
+        <ChevronDown size={15} className={`text-slate-400 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="absolute end-0 mt-2 w-52 rounded-xl bg-white border border-navy-100 shadow-card-hover overflow-hidden z-30 animate-pop">
+          {sortOptions.map((o) => (
+            <button
+              key={o.value}
+              onClick={() => {
+                onChange(o.value)
+                setOpen(false)
+              }}
+              className={`w-full flex items-center justify-between gap-2 px-4 py-2.5 text-sm font-bold transition-colors ${
+                o.value === value ? 'text-teal-brand bg-teal-brand/5' : 'text-slate-600 hover:bg-navy-50'
+              }`}
+            >
+              {o.label}
+              {o.value === value && <Check size={15} strokeWidth={3} />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ── صفحة الدليل ─────────────────────────────────────────────── */
 export default function Listing() {
   const [params, setParams] = useSearchParams()
   const activeCategory = params.get('category') || ''
@@ -61,6 +160,13 @@ export default function Listing() {
     setParams(next, { replace: true })
   }
 
+  const setType = (value) => {
+    const next = new URLSearchParams(params)
+    if (value === 'all') next.delete('type')
+    else next.set('type', value)
+    setParams(next, { replace: true })
+  }
+
   const clearAll = () => {
     setSelectedCities([])
     setOnlyVerified(false)
@@ -73,6 +179,7 @@ export default function Listing() {
     const sectorBySlug = Object.fromEntries(sectors.map((s) => [s.slug, s.id]))
     let list = allCompanies.filter((c) => {
       if (activeCategory && c.sectorId !== sectorBySlug[activeCategory]) return false
+      if (type !== 'all' && typeOf(c) !== type) return false
       const hay = `${c.name} ${c.sector} ${c.desc} ${c.city}`
       if (q && !hay.includes(q)) return false
       if (search && !hay.includes(search)) return false
@@ -87,26 +194,48 @@ export default function Listing() {
         list = [...list].sort((a, b) => a.name.localeCompare(b.name, 'ar'))
         break
       case 'verified':
-        list = [...list].sort((a, b) => Number(b.verified) - Number(a.verified))
+        list = [...list].sort((a, b) => Number(b.verified) - Number(a.verified) || (b.rating || 0) - (a.rating || 0))
         break
       default:
         list = [...list].sort((a, b) => Number(b.verified) - Number(a.verified) || (b.rating || 0) - (a.rating || 0))
     }
     return list
-  }, [activeCategory, q, search, selectedCities, onlyVerified, minRating, sort])
+  }, [activeCategory, q, search, type, selectedCities, onlyVerified, minRating, sort])
 
   const activeSector = sectors.find((s) => s.slug === activeCategory)
+  const typeLabel = typeOptions.find((t) => t.value === type)
+
+  const clearQ = () => {
+    const next = new URLSearchParams(params)
+    next.delete('q')
+    setParams(next, { replace: true })
+    setSearch('')
+  }
+
+  const activeChips = []
+  if (activeSector) activeChips.push({ label: `القطاع: ${activeSector.name}`, clear: () => setCategory('') })
+  if (type !== 'all') activeChips.push({ label: typeLabel?.label || 'نوع النشاط', clear: () => setType('all') })
+  if (q && q !== search) activeChips.push({ label: `بحث: ${q}`, clear: clearQ })
+  if (search) activeChips.push({ label: `بحث: ${search}`, clear: () => setSearch('') })
+  selectedCities.forEach((city) =>
+    activeChips.push({ label: city, clear: () => setSelectedCities((p) => p.filter((x) => x !== city)) })
+  )
+  if (onlyVerified) activeChips.push({ label: 'موثّق فقط', clear: () => setOnlyVerified(false) })
+  if (minRating) activeChips.push({ label: `تقييم ${minRating}+`, clear: () => setMinRating(0) })
 
   const filtersPanel = (
     <div>
-      <div className="mb-4">
-        <h3 className="font-black text-navy-800 text-base mb-3">خيارات البحث</h3>
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="font-black text-navy-800 text-base flex items-center gap-2">
+          <SlidersHorizontal size={16} className="text-teal-brand" />
+          خيارات البحث
+        </h3>
         <button
           onClick={() => setMobileFilters(false)}
-          className="lg:hidden flex items-center gap-1.5 text-sm font-bold text-teal-brand mb-3"
+          className="lg:hidden flex items-center gap-1.5 text-sm font-bold text-teal-brand"
         >
           <X size={16} />
-          إغلاق الفلاتر
+          إغلاق
         </button>
       </div>
 
@@ -122,85 +251,52 @@ export default function Listing() {
       </div>
 
       <Collapsible title="نوع النشاط" icon={Building2} defaultOpen>
-        <div className="space-y-1.5">
+        <div className="pb-4 pt-1 space-y-2">
           {typeOptions.map((t) => (
-            <label key={t.value} className="flex items-center gap-2.5 cursor-pointer text-sm text-slate-600 hover:text-navy-800">
-              <input
-                type="radio"
-                name="type"
-                checked={type === t.value}
-                onChange={() => {
-                  const next = new URLSearchParams(params)
-                  if (t.value === 'all') next.delete('type')
-                  else next.set('type', t.value)
-                  setParams(next, { replace: true })
-                }}
-                className="accent-teal-brand"
-              />
-              {t.label}
-            </label>
+            <Radio
+              key={t.value}
+              name="type"
+              checked={type === t.value}
+              onChange={() => setType(t.value)}
+              label={t.label}
+            />
           ))}
         </div>
       </Collapsible>
 
       <Collapsible title="القطاعات" icon={SlidersHorizontal}>
-        <div className="max-h-64 overflow-y-auto pe-1 space-y-1.5">
-          <label className="flex items-center gap-2.5 cursor-pointer text-sm text-slate-600 hover:text-navy-800">
-            <input
-              type="radio"
-              name="sector"
-              checked={!activeCategory}
-              onChange={() => setCategory('')}
-              className="accent-teal-brand"
-            />
-            كل القطاعات
-          </label>
+        <div className="pb-4 pt-1 max-h-64 overflow-y-auto pe-1 space-y-2">
+          <Radio name="sector" checked={!activeCategory} onChange={() => setCategory('')} label="كل القطاعات" />
           {sectors.map((s) => (
-            <label key={s.id} className="flex items-center gap-2.5 cursor-pointer text-sm text-slate-600 hover:text-navy-800">
-              <input
-                type="radio"
-                name="sector"
-                checked={activeCategory === s.slug}
-                onChange={() => setCategory(s.slug)}
-                className="accent-teal-brand"
-              />
-              <span className="truncate">{s.name}</span>
-            </label>
+            <Radio key={s.id} name="sector" checked={activeCategory === s.slug} onChange={() => setCategory(s.slug)} label={s.name} />
           ))}
         </div>
       </Collapsible>
 
-      <Collapsible title="المدن" icon={MapPin}>
-        <div className="space-y-1.5">
+      <Collapsible title="المدن" icon={MapPin} badge={selectedCities.length || undefined}>
+        <div className="pb-4 pt-1 space-y-2">
           {cities.map((c) => (
-            <label key={c.id} className="flex items-center gap-2.5 cursor-pointer text-sm text-slate-600 hover:text-navy-800">
-              <input
-                type="checkbox"
-                checked={selectedCities.includes(c.name)}
-                onChange={() =>
-                  setSelectedCities((prev) =>
-                    prev.includes(c.name) ? prev.filter((x) => x !== c.name) : [...prev, c.name]
-                  )
-                }
-                className="accent-teal-brand rounded"
-              />
-              {c.name}
-            </label>
+            <Checkbox
+              key={c.id}
+              checked={selectedCities.includes(c.name)}
+              onChange={() =>
+                setSelectedCities((prev) =>
+                  prev.includes(c.name) ? prev.filter((x) => x !== c.name) : [...prev, c.name]
+                )
+              }
+              label={c.name}
+            />
           ))}
         </div>
       </Collapsible>
 
       <Collapsible title="حالة التوثيق والتقييم" icon={BadgeCheck}>
-        <div className="space-y-3">
-          <label className="flex items-center gap-2.5 cursor-pointer text-sm text-slate-600 hover:text-navy-800">
-            <input
-              type="checkbox"
-              checked={onlyVerified}
-              onChange={(e) => setOnlyVerified(e.target.checked)}
-              className="accent-teal-brand rounded"
-            />
-            الشركات الموثّقة فقط
-          </label>
+        <div className="pb-4 pt-1 space-y-3">
+          <Checkbox
+            checked={onlyVerified}
+            onChange={(e) => setOnlyVerified(e.target.checked)}
+            label="الشركات الموثّقة فقط"
+          />
           <div>
             <p className="text-xs font-semibold text-slate-400 mb-2 flex items-center gap-1">
               <Star size={13} className="text-amber-500" />
@@ -235,48 +331,76 @@ export default function Listing() {
   )
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 animate-fade-up">
-      {/* رأس الصفحة */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <nav className="text-xs text-slate-400 font-semibold mb-1.5">
-            <Link to="/" className="hover:text-teal-brand">الرئيسية</Link>
-            <span className="mx-1.5">/</span>
-            <span className="text-slate-500">دليل الشركات</span>
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 animate-fade-up">
+      {/* رأس متدرج */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-l from-navy-900 via-navy-700 to-teal-brand-dark px-6 md:px-8 py-9 md:py-11 mb-8 text-white">
+        <div className="absolute inset-0 bg-dots opacity-40" aria-hidden="true" />
+        <div className="absolute -top-12 -end-12 w-52 h-52 rounded-full bg-teal-brand/25 blur-3xl" aria-hidden="true" />
+        <div className="absolute -bottom-14 -start-10 w-56 h-56 rounded-full bg-amber-brand/20 blur-3xl" aria-hidden="true" />
+        <div className="relative">
+          <nav className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 mb-3">
+            <Link to="/" className="inline-flex items-center gap-1 hover:text-white transition-colors">
+              <Home size={13} />
+              الرئيسية
+            </Link>
+            <span className="text-slate-500">/</span>
+            <span className="text-teal-brand-light">دليل الشركات</span>
           </nav>
-          <h1 className="font-cairo font-black text-navy-800 text-2xl md:text-3xl">
-            {activeSector?.name || 'دليل الشركات والمصانع'}
-          </h1>
-          <p className="text-sm font-medium text-slate-500 mt-1">
-            {results.length.toLocaleString('ar-EG')} نتيجة مطابقة {q && <>لبحث «{q}»</>}
+          <h1 className="font-cairo font-black text-2xl md:text-3xl">{activeSector?.name || 'دليل الشركات والمصانع'}</h1>
+          <p className="mt-2 text-sm font-semibold text-slate-300 flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15">
+              <Building2 size={13} className="text-teal-brand-light" />
+              {results.length.toLocaleString('ar-EG')} نتيجة
+            </span>
+            {q && <span>مطابقة لبحث «{q}»</span>}
           </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setMobileFilters(true)}
-            className="lg:hidden inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-bold text-navy-700 border border-navy-200"
-          >
-            <SlidersHorizontal size={16} />
-            الفلاتر
-          </button>
-          <div className="relative">
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value)}
-              className="appearance-none h-11 rounded-full border border-navy-200 bg-white px-4 pe-9 text-sm font-semibold text-navy-700 outline-none focus:border-teal-brand cursor-pointer"
-            >
-              <option value="featured">الأكثر تميزاً</option>
-              <option value="verified">الموثّق أولاً</option>
-              <option value="name">الترتيب الأبجدي</option>
-            </select>
-            <ChevronDown size={15} className="absolute end-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-          </div>
         </div>
       </div>
 
+      {/* الأدوات */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <p className="text-sm font-bold text-slate-500">
+          {activeSector ? `شركات قطاع ${activeSector.name}` : 'جميع الشركات'}
+          {type !== 'all' && ` — ${typeLabel?.label}`}
+        </p>
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setMobileFilters(true)}
+            className="lg:hidden inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-bold text-navy-700 border border-navy-200 bg-white"
+          >
+            <SlidersHorizontal size={16} />
+            الفلاتر
+            {activeChips.length > 0 && (
+              <span className="grid place-items-center w-5 h-5 rounded-full text-[10px] font-black text-white bg-teal-brand">
+                {activeChips.length.toLocaleString('ar-EG')}
+              </span>
+            )}
+          </button>
+          <SortMenu value={sort} onChange={setSort} />
+        </div>
+      </div>
+
+      {/* فلاتر نشطة */}
+      {activeChips.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 mb-6">
+          {activeChips.map((chip) => (
+            <button
+              key={chip.label}
+              onClick={chip.clear}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-navy-700 text-white hover:bg-navy-800 transition-colors"
+            >
+              {chip.label}
+              <X size={12} />
+            </button>
+          ))}
+          <button onClick={clearAll} className="text-xs font-bold text-slate-400 hover:text-red-500 transition-colors">
+            مسح الكل
+          </button>
+        </div>
+      )}
+
       <div className="lg:grid lg:grid-cols-4 lg:gap-8 items-start">
-        {/* الفلاتر - الجانب (يمين في RTL) */}
+        {/* الفلاتر - الجانب */}
         <aside className="hidden lg:block lg:sticky lg:top-24 bg-white/80 backdrop-blur-sm rounded-card border border-navy-100/70 shadow-card p-5">
           {filtersPanel}
         </aside>
@@ -285,7 +409,7 @@ export default function Listing() {
         {mobileFilters && (
           <div className="fixed inset-0 z-50 lg:hidden">
             <div className="absolute inset-0 bg-navy-950/40 backdrop-blur-sm" onClick={() => setMobileFilters(false)} />
-            <aside className="absolute inset-y-0 start-0 w-[85%] max-w-sm bg-white p-5 overflow-y-auto shadow-2xl animate-fade-up">
+            <aside className="absolute inset-y-0 start-0 w-[85%] max-w-sm bg-white p-5 overflow-y-auto shadow-2xl animate-pop">
               {filtersPanel}
             </aside>
           </div>
@@ -300,8 +424,8 @@ export default function Listing() {
               ))}
             </div>
           ) : (
-            <div className="bg-white rounded-card border border-navy-100/70 shadow-card p-14 text-center">
-              <span className="mx-auto grid place-items-center w-16 h-16 rounded-full bg-navy-50 text-navy-300 mb-4">
+            <div className="bg-white rounded-card border-2 border-dashed border-navy-100 shadow-card p-14 text-center">
+              <span className="mx-auto grid place-items-center w-16 h-16 rounded-full bg-gradient-to-br from-teal-brand/15 to-amber-brand/15 text-navy-500 mb-4">
                 <Search size={26} />
               </span>
               <h3 className="font-black text-navy-800 text-lg">لا توجد نتائج مطابقة</h3>
@@ -310,7 +434,7 @@ export default function Listing() {
               </p>
               <button
                 onClick={clearAll}
-                className="mt-5 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full text-sm font-bold text-white bg-navy-700 hover:bg-navy-800"
+                className="mt-5 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full text-sm font-bold text-white bg-gradient-to-l from-teal-brand to-navy-700 hover:shadow-card-hover transition-shadow"
               >
                 <RotateCcw size={15} />
                 إعادة تعيين الفلاتر
@@ -324,8 +448,10 @@ export default function Listing() {
               {[1, 2, 3].map((p) => (
                 <button
                   key={p}
-                  className={`grid place-items-center w-10 h-10 rounded-lg text-sm font-bold transition-colors ${
-                    p === 1 ? 'bg-navy-700 text-white shadow-card' : 'bg-white border border-navy-200 text-navy-700 hover:border-teal-brand'
+                  className={`grid place-items-center w-10 h-10 rounded-lg text-sm font-bold transition-all ${
+                    p === 1
+                      ? 'bg-gradient-to-br from-teal-brand to-navy-700 text-white shadow-card'
+                      : 'bg-white border border-navy-200 text-navy-700 hover:border-teal-brand'
                   }`}
                 >
                   {p.toLocaleString('ar-EG')}

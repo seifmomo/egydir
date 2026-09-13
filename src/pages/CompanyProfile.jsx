@@ -52,6 +52,7 @@ export default function CompanyProfile() {
   const navigate = useNavigate()
   const company = companyById(id)
   const [tab, setTab] = useState('about')
+  const [logoErr, setLogoErr] = useState(false)
 
   if (!company) {
     return (
@@ -89,8 +90,8 @@ export default function CompanyProfile() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-end gap-5 relative -mt-14 md:-mt-16 pb-0">
             <div className="w-28 h-28 md:w-36 md:h-36 rounded-2xl bg-white border border-navy-100 shadow-card-hover flex items-center justify-center overflow-hidden shrink-0">
-              {logoUrl(company.logo) ? (
-                <img src={logoUrl(company.logo)} alt={company.name} className="w-full h-full object-cover" />
+              {logoUrl(company.logo) && !logoErr ? (
+                <img src={logoUrl(company.logo)} alt={company.name} className="w-full h-full object-cover" onError={() => setLogoErr(true)} />
               ) : (
                 <span className="text-5xl font-black text-navy-800">{company.name.trim().charAt(0)}</span>
               )}

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { MapPin, Star, BadgeCheck, ChevronLeft, Phone } from 'lucide-react'
 import { logoUrl } from '../data'
@@ -15,16 +16,18 @@ const gradients = [
 ]
 
 export function BrandLogo({ company, size = 'lg', className = '' }) {
+  const [err, setErr] = useState(false)
   const s =
     size === 'xl' ? 'w-14 h-14' : size === 'sm' ? 'w-9 h-9' : 'w-12 h-12'
   const grad = gradients[company.id % gradients.length]
   const url = logoUrl(company.logo)
+  const show = url && !err
   return (
     <span
       className={`grid place-items-center rounded-xl overflow-hidden bg-gradient-to-br ${grad} text-white font-black shrink-0 shadow-md ${s} ${className}`}
     >
-      {url ? (
-        <img src={url} alt={company.name} className="w-full h-full object-cover" loading="lazy" />
+      {show ? (
+        <img src={url} alt={company.name} className="w-full h-full object-cover" loading="lazy" onError={() => setErr(true)} />
       ) : (
         <span className="text-lg select-none">{company.name.trim().charAt(0)}</span>
       )}
