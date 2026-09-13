@@ -755,11 +755,15 @@ export const companies = [
 
 import { demoCompanies } from './demo-data.js'
 
+// إزالة أي ملحق لاتيني من نهاية الاسم (مثال: «الأنظمة الهندسية المصرية - EES» → «الأنظمة الهندسية المصرية»)
+const arabifyName = (n) => n.replace(/\s+(?:[-–—]\s*)?[A-Za-z0-9][A-Za-z0-9 &./()\-,]*$/, '').trim()
+
 // إضافة الحقول المساعدة
 export const categories = sectors
 
 export const allCompanies = [...companies, ...demoCompanies].map((c) => ({
   ...c,
+  name: arabifyName(c.name),
   sector: c.sectorLabel || sectorName(c.sectorId),
   rating: c.rating ?? 4 + ((c.id * 7) % 10) / 10,
   followers: ((c.id * 137) % 12000) + 800,
