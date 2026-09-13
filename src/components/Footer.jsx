@@ -131,6 +131,12 @@ export default function Footer() {
             دليل صناعي وتجاري متكامل للشركات المصرية
           </p>
         </div>
+
+        <div className="border-t border-navy-800 mt-6 pt-5 text-center">
+          <p className="text-xs text-slate-500" dir="ltr">
+            © 2026 Seifeldin Mohamed. All Rights Reserved. — Website design & code authored by Seifeldin Mohamed
+          </p>
+        </div>
       </div>
     </footer>
   )
